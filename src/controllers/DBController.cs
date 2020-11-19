@@ -7,7 +7,11 @@ namespace MewPewServerNew
 {
     class DBController
     {
-        public static string connString = "Host=saturn.cikpcfyo50nm.us-east-2.rds.amazonaws.com;Username=saturnadmin;Password=Emily~Matt1996;Database=postgres";
+        public static string connString = $"Host={Program.config["dbHost"]};" +
+            $"Port={Program.config["dbPort"]};" +
+            $"Username={Program.config["dbUser"]};" +
+            $"Password={Program.config["dbPass"]};" +
+            $"Database={Program.config["dbName"]}";
         public static async Task<bool> InitDb()
         {
             try

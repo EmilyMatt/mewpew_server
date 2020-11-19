@@ -1,16 +1,17 @@
-﻿using Npgsql;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+
 
 namespace MewPewServerNew
 {
     class Program
     {
-        
+        public static IConfiguration config;
         public static List<MewPewSocket> sockets;
         public static List<User> activeUsers;
         public static List<Map> maps;
@@ -25,17 +26,21 @@ namespace MewPewServerNew
 
         static async Task Main(string[] args)
         {
-            IPAddress ipAddress = IPAddress.Parse("172.31.18.142");
-            int port = 2500;
-            
+            config = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json", true, true)
+                .Build();
 
-            tcpListener = new TcpListener(ipAddress, port);
+            IPAddress ipAddress = IPAddress.Parse(config["ip"]);
+            int tcPort = int.Parse(config["tcPort"]);
+            int udPort = int.Parse(config["udPort"]);
+
+            tcpListener = new TcpListener(ipAddress, tcPort);
             tcpListener.Server.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, false);
             tcpListener.Start();
 
             listening = true;
-            udp = new UdpClient(2701);
-            generalEndpoint = new IPEndPoint(IPAddress.Any, 2701);
+            udp = new UdpClient(udPort);
+            generalEndpoint = new IPEndPoint(IPAddress.Any, udPort);
             sockets = new List<MewPewSocket>();
             activeUsers = new List<User>();
             maps = new List<Map>();
@@ -43,7 +48,7 @@ namespace MewPewServerNew
 
             maps.Add(new Map("Alpha Centauri"));
 
-            Console.WriteLine($"Server listening on {ipAddress}:{port} in {env} mode");
+            Console.WriteLine($"Server listening on {ipAddress}:{tcPort} in {env} mode");
 
             await Task.Run( async () => {
                 while (listening)
